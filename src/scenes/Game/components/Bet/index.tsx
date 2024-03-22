@@ -1,7 +1,7 @@
 import { ReactElement } from 'react'
 import { Buttons, ChipButton, Chips, Container, Current, Label, Total } from './styles'
 import { Button } from 'src/components/Layout'
-import { $bet, $cash, betIncreased, betReset } from '../../model'
+import { $bet, $cash, $isGameStarted, betIncreased, betReset, betsOff } from '../../model'
 import { useUnit } from 'effector-react'
 import clsx from 'clsx'
 
@@ -15,37 +15,44 @@ const chips = [
 ]
 
 export default function Bet(): ReactElement {
-  const [bet, cash] = useUnit([$bet, $cash])
+  const [bet, cash, isGameStarted] = useUnit([$bet, $cash, $isGameStarted])
 
   const handleAllInClick = () => betIncreased(cash)
   const handleClearClick = () => betReset(bet)
+  const handleDealClick = () => betsOff()
 
   return (
     <Container>
       <Total>Your Cash: ${cash}</Total>
       <Label>Current bet:</Label>
       <Current>${bet}</Current>
-      <Chips>
-        {chips.map(({ color, value }) => (
-          <ChipButton
-            className={clsx({ hidden: value > cash })}
-            key={value}
-            $color={color}
-            onClick={() => betIncreased(value)}
-          >
-            {value}
-          </ChipButton>
-        ))}
-      </Chips>
-      <Buttons>
-        <Button disabled={cash === 0} onClick={handleAllInClick}>
-          All in
-        </Button>
-        <Button disabled={bet === 0} onClick={handleClearClick}>
-          Clear
-        </Button>
-        <Button disabled={bet === 0}>Deal</Button>
-      </Buttons>
+      {!isGameStarted ? (
+        <>
+          <Chips>
+            {chips.map(({ color, value }) => (
+              <ChipButton
+                className={clsx({ hidden: value > cash })}
+                key={value}
+                $color={color}
+                onClick={() => betIncreased(value)}
+              >
+                {value}
+              </ChipButton>
+            ))}
+          </Chips>
+          <Buttons>
+            <Button disabled={cash === 0} onClick={handleAllInClick}>
+              All in
+            </Button>
+            <Button disabled={bet === 0} onClick={handleClearClick}>
+              Clear
+            </Button>
+            <Button disabled={bet === 0} onClick={handleDealClick}>
+              Deal
+            </Button>
+          </Buttons>
+        </>
+      ) : null}
     </Container>
   )
 }

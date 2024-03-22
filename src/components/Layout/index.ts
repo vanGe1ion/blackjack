@@ -13,6 +13,10 @@ export const BaseCard = styled.div`
   background-color: white;
 `
 
+export const BaseTurnover = styled(BaseCard)`
+  background: linear-gradient(white, blue, white, blue);
+`
+
 export const Button = styled.button`
   color: white;
   background-color: darkturquoise;
