@@ -23,9 +23,15 @@ export const $deckLength = $deck.map(deck => deck.length)
 
 export const $dealerHand = createStore<CardType[]>([])
 export const $dealerHandScore = $dealerHand.map(getScore)
+export const $isDealerBlackJack = $dealerHandScore.map(score => score === 21)
+// export const $isDealerOverflow = $dealerHandScore.map(score => score > 21)
+export const $isDealerHandWin = createStore<boolean | null>(null)
 
 export const $leftHand = createStore<CardType[]>([])
 export const $leftHandScore = $leftHand.map(getScore)
+export const $isLeftBlackJack = $leftHandScore.map(score => score === 21)
+export const $isLeftOverflow = $leftHandScore.map(score => score > 21)
+export const $isLeftHandWin = createStore<boolean | null>(null)
 
 // export const $rightHand = createStore<CardType[] | null>(null)
 // export const $rightHandScore = $rightHand.map(getScore)
@@ -56,14 +62,8 @@ sample({
 })
 $deck.on(cardHit, store => store.slice(0, store.length - 1))
 $leftHand.on(cardHit, (hand, card) => [...hand, card])
-const overflowed = sample({
-  source: $leftHandScore,
-  filter: score => score > 21
-})
-const playersBlackJackGet = sample({
-  source: $leftHandScore,
-  filter: score => score === 21
-})
-const playersTurnEnded = merge([overflowed, playersBlackJackGet, standPlayed])
+const playersTurnEnded = merge([$isLeftOverflow, $isLeftBlackJack, standPlayed])
 $isDealerTurn.on(playersTurnEnded, () => true)
 
+$isLeftHandWin.on($isLeftOverflow, (_, value) => !value)
+$isDealerHandWin.on($isLeftOverflow, (_, value) => value)

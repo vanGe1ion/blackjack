@@ -23,3 +23,12 @@ export const ScoreLabel = styled.div`
     color: red;
   }
 `
+
+export const ResultLabel = styled.div`
+  font-size: 40px;
+  color: darkturquoise;
+
+  &.is-win {
+    color: red;
+  }
+`
