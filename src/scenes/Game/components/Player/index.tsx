@@ -1,30 +1,25 @@
 import { ReactElement } from 'react'
 import { useUnit } from 'effector-react'
-import { $isGameStarted, $isLeftHandWin, $leftHand, $leftHandScore } from '../../model'
+import { $isGameStarted, $isHandWin, $hand, $handScore } from '../../model'
 import Card from 'src/components/Card'
 import clsx from 'clsx'
 import { FieldContainer, ResultLabel, ScoreLabel } from '../Layout'
 import Actions from './components/Actions'
 
 export default function Player(): ReactElement {
-  const [leftHand, leftHandScore, isGameStarted, isLeftHandWin] = useUnit([
-    $leftHand,
-    $leftHandScore,
-    $isGameStarted,
-    $isLeftHandWin
-  ])
-
+  const [hand, handScore, isGameStarted, isHandWin] = useUnit([$hand, $handScore, $isGameStarted, $isHandWin])
+  console.log('isHandWin', isHandWin)
   return (
     <FieldContainer>
       <FieldContainer>
-        {leftHand.map((card, index) => (
+        {hand.map((card, index) => (
           <Card key={index} card={card} />
         ))}
         {isGameStarted ? (
-          <ScoreLabel className={clsx({ 'is-blackjack': leftHandScore === 21 })}>{leftHandScore}</ScoreLabel>
+          <ScoreLabel className={clsx({ 'is-blackjack': handScore === 21 })}>{handScore}</ScoreLabel>
         ) : null}
-        {isLeftHandWin != null ? (
-          <ResultLabel className={clsx({ 'is-win': isLeftHandWin })}>{isLeftHandWin ? 'Win' : 'Lose'}</ResultLabel>
+        {isHandWin != null ? (
+          <ResultLabel className={clsx({ 'is-win': isHandWin })}>{isHandWin ? 'Win' : 'Lose'}</ResultLabel>
         ) : null}
       </FieldContainer>
       {isGameStarted ? <Actions /> : null}

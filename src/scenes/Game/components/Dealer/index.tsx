@@ -14,6 +14,7 @@ export default function Dealer(): ReactElement {
     $isGameStarted,
     $isDealerHandWin
   ])
+  console.log(isDealerTurn)
 
   if (isDealerTurn)
     return (
