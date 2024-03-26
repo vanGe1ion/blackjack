@@ -17,9 +17,9 @@ export const BaseTurnover = styled(BaseCard)`
   background: linear-gradient(white, blue, white, blue);
 `
 
-export const Button = styled.button`
+export const Button = styled.button<{ $color?: string }>`
   color: white;
-  background-color: darkturquoise;
+  background-color: ${({ $color }) => $color ?? 'darkturquoise'};
   border: none;
   border-radius: 10px;
   padding: 8px 16px;
@@ -28,15 +28,15 @@ export const Button = styled.button`
   cursor: pointer;
 
   &:hover:not(:disabled) {
-    background-color: ${rgba('darkturquoise', 0.9)};
+    background-color: ${({ $color }) => rgba($color ?? 'darkturquoise', 0.9)};
 
     &:active {
-      background-color: ${rgba('darkturquoise', 0.7)};
+      background-color: ${({ $color }) => rgba($color ?? 'darkturquoise', 0.7)};
     }
   }
 
   &:disabled {
-    background-color: ${rgba('darkturquoise', 0.3)};
+    background-color: ${({ $color }) => rgba($color ?? 'darkturquoise', 0.3)};
     cursor: not-allowed;
   }
 `

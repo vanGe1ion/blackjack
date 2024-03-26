@@ -1,20 +1,31 @@
 import { ReactElement } from 'react'
-import { FieldContainer, ResultLabel, ScoreLabel } from '../Layout'
+import { FieldContainer } from '../Layout'
 import { useUnit } from 'effector-react'
-import { $dealerHand, $dealerHandScore, $isDealerHandWin, $isDealerTurn, $isGameStarted } from '../../model'
+import {
+  $dealerHand,
+  $dealerHandScore,
+  $isDealerBlackJack,
+  $isDealerHandWin,
+  $isDealerTurn,
+  $isGameStarted,
+  $isPushScore
+} from '../../model'
 import { BaseTurnover } from 'src/components/Layout'
 import Card from 'src/components/Card'
-import clsx from 'clsx'
+import WinLabel from 'src/components/WinLabel'
+import ScoreLabel from 'src/components/ScoreLabel'
 
 export default function Dealer(): ReactElement {
-  const [dealerHand, dealerHandScore, isDealerTurn, isGameStarted, isDealerHandWin] = useUnit([
-    $dealerHand,
-    $dealerHandScore,
-    $isDealerTurn,
-    $isGameStarted,
-    $isDealerHandWin
-  ])
-  console.log(isDealerTurn)
+  const [dealerHand, dealerHandScore, isDealerTurn, isGameStarted, isDealerHandWin, isDealerBlackJack, isPushScore] =
+    useUnit([
+      $dealerHand,
+      $dealerHandScore,
+      $isDealerTurn,
+      $isGameStarted,
+      $isDealerHandWin,
+      $isDealerBlackJack,
+      $isPushScore
+    ])
 
   if (isDealerTurn)
     return (
@@ -22,10 +33,8 @@ export default function Dealer(): ReactElement {
         {dealerHand.map((card, index) => (
           <Card key={index} card={card} />
         ))}
-        <ScoreLabel className={clsx({ 'is-blackjack': dealerHandScore === 21 })}>{dealerHandScore}</ScoreLabel>
-        {isDealerHandWin != null ? (
-          <ResultLabel className={clsx({ 'is-win': isDealerHandWin })}>{isDealerHandWin ? 'Win' : 'Lose'}</ResultLabel>
-        ) : null}
+        <ScoreLabel score={dealerHandScore} isBlackJack={isDealerBlackJack} />
+        {isDealerHandWin != null ? <WinLabel isWin={isDealerHandWin} isPush={isPushScore} /> : null}
       </FieldContainer>
     )
 
