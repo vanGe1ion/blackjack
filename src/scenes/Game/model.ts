@@ -18,6 +18,7 @@ export const $bet = createStore(0)
 
 export const $deck = createStore<CardType[]>([])
 export const $deckLength = $deck.map(deck => deck.length)
+export const $needRefreshDeck = $deckLength.map(length => length <= 8)
 
 export const $dealerHand = createStore<CardType[]>([])
 export const $dealerHandScore = $dealerHand.map(getScore)
@@ -44,12 +45,19 @@ $cash.on(betIncreased, (store, value) => store - value).on(betReset, (store, val
 $isGameStarted.on(betsOff, () => true)
 
 // game start
-$deck.on(betsOff, createDeck)
-const cardsHanded = sample({
-  source: $deck,
+const deckRefreshed = sample({
+  source: $needRefreshDeck,
   clock: betsOff,
-  filter: deck => deck.length !== 0,
-  fn: deck => deck.slice(-4).reverse()
+  filter: needRefreshDeck => needRefreshDeck
+})
+$deck.on(deckRefreshed, createDeck)
+
+// handing cards
+const cardsHanded = sample({
+  source: { deck: $deck, needRefreshDeck: $needRefreshDeck },
+  clock: [betsOff, deckRefreshed],
+  filter: ({ needRefreshDeck }) => !needRefreshDeck,
+  fn: ({ deck }) => deck.slice(-4).reverse()
 })
 $deck.on(cardsHanded, (store, distribution) => store.filter(card => distribution.indexOf(card) < 0))
 $hand.on(cardsHanded, (_, distribution) => [distribution[0], distribution[2]])
@@ -82,16 +90,19 @@ $isPickedUp.on(pickUpPlayed, () => true)
 const playersTurnEnded = sample({
   source: {
     isGameStarted: $isGameStarted,
-    isPossibleDealerBlackJack: $isPossibleDealerBlackJack
+    isPossibleDealerBlackJack: $isPossibleDealerBlackJack,
+    isHandBlackJack: $isHandBlackJack
   },
-  clock: [$isHandBust, $isHandBlackJack, $isTwentyOne, betDoubled],
-  filter: ({ isGameStarted, isPossibleDealerBlackJack }) => isGameStarted && !isPossibleDealerBlackJack
+  clock: [$isHandBust, $isHandBlackJack, $isDealerBlackJack, $isTwentyOne],
+  filter: ({ isGameStarted, isPossibleDealerBlackJack, isHandBlackJack }) =>
+    isGameStarted && (!isHandBlackJack || (isHandBlackJack && !isPossibleDealerBlackJack))
 })
-$isDealerTurn.on([playersTurnEnded, standPlayed, pickUpPlayed], () => true)
+$isDealerTurn.on([playersTurnEnded, standPlayed, pickUpPlayed, betDoubled], () => true)
 
 // dealer's turn
 const $canDealerHit = and(
   not($isHandBlackJack),
+  not($isHandBust),
   or(
     not($isDealerTurn),
     $dealerHandScore.map(score => score < 17)
@@ -100,7 +111,7 @@ const $canDealerHit = and(
 const dealerHit = createEvent<CardType>()
 sample({
   source: { deck: $deck, canDealerHit: $canDealerHit, isDealerTurn: $isDealerTurn },
-  clock: [standPlayed, dealerHit, $isTwentyOne],
+  clock: [standPlayed, doublePlayed, dealerHit, $isTwentyOne],
   filter: ({ canDealerHit, isDealerTurn }) => isDealerTurn && canDealerHit,
   fn: ({ deck }) => deck[deck.length - 1],
   target: dealerHit
@@ -137,7 +148,7 @@ const winChecked = sample({
 $isDealerHandWin.on(winChecked, (_, { isDealerWin }) => isDealerWin)
 $isHandWin.on(winChecked, (_, { isPlayerWin }) => isPlayerWin)
 
-// cash calculating and reset
+// cash calculating
 const winningCounted = sample({
   source: {
     isDealerHandWin: $isDealerHandWin,
@@ -158,9 +169,9 @@ const winningCounted = sample({
 $cash.on(winningCounted, (cash, winning) => cash + winning)
 $bet.reset(winningCounted)
 
+// reset game
 $isGameStarted.reset(winningCounted)
 $isDealerTurn.reset(winningCounted)
-$deck.reset(winningCounted)
 $dealerHand.reset(winningCounted)
 $hand.reset(winningCounted)
 $isDealerHandWin.reset(winningCounted)
