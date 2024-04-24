@@ -6,7 +6,7 @@ import {
   $isHandBlackJack,
   $isHandWin,
   hitPlayed,
-  nextPlayed,
+  gameOn,
   standPlayed,
   pickUpPlayed,
   $hand,
@@ -28,7 +28,7 @@ export default function Actions(): ReactElement {
 
   const handleHitClick = () => hitPlayed()
   const handleStandClick = () => standPlayed()
-  const handleNextClick = () => nextPlayed()
+  const handleNextClick = () => gameOn()
   const handlePickUpClick = () => pickUpPlayed()
   const handleDoubleClick = () => doublePlayed()
 
